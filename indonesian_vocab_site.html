@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인도네시아어 단어 공부</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#1d2738;--muted:#667085;--accent:#3457d5;--accent2:#e9edff;--line:#e4e8f0;--good:#16835d;--bad:#c23b48}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:22px 16px}
+.wrap{max-width:900px;margin:auto;padding:0 16px}h1{font-size:clamp(22px,4vw,30px);margin:0 0 6px}p{line-height:1.55}.sub{color:var(--muted);margin:0}
+main{padding:22px 0 48px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.stat,.panel,.word-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px #16213b08}.stat b{display:block;font-size:25px;margin-top:5px}.stat span,.muted{color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab,button{border:0;border-radius:10px;padding:11px 14px;font-weight:650;cursor:pointer;font-size:14px}.tab{background:#e9edf5;color:#39445a}.tab.active,button.primary{background:var(--accent);color:#fff}button.secondary{background:var(--accent2);color:var(--accent)}button.ghost{background:#f0f2f7;color:#475467}button.danger{background:#fff0f1;color:var(--bad)}button:disabled{opacity:.45;cursor:not-allowed}
+.panel{margin-bottom:16px}.panel h2{font-size:18px;margin:0 0 12px}.hidden{display:none!important}
+input,textarea,select{width:100%;border:1px solid #cfd6e3;border-radius:10px;padding:11px 12px;font:inherit;background:#fff;color:var(--ink)}label{font-size:13px;font-weight:650;display:block;margin:12px 0 6px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.word-card{text-align:center;padding:28px 18px;min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center}.word{font-size:clamp(28px,6vw,42px);font-weight:800;letter-spacing:.2px}.meaning{font-size:22px;margin:12px 0}.example{color:var(--muted);max-width:600px;margin:6px auto}.answer-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.answer-options button{background:#f2f4fa;color:var(--ink);border:1px solid var(--line);min-height:48px}.answer-options button.correct{background:#e5f7ef;color:var(--good);border-color:#a5dfc6}.answer-options button.wrong{background:#fff0f1;color:var(--bad);border-color:#f0b9bf}
+.feedback{font-weight:700;margin-top:12px;min-height:24px}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px}.item strong{font-size:16px}.item .detail{color:var(--muted);font-size:13px;margin-top:4px}.item button{padding:7px 9px;font-size:12px}.empty{padding:22px;text-align:center;color:var(--muted)}footer{color:var(--muted);font-size:12px;text-align:center;padding:20px}
+@media(max-width:600px){.stats{gap:8px}.stat{padding:12px}.stat b{font-size:21px}.formgrid,.answer-options{grid-template-columns:1fr}.item{padding:10px}.word-card{padding:22px 14px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>🇮🇩 인도네시아어 단어장</h1><p class="sub">하루 5~10개씩 배우고, 틀린 단어는 다시 복습하세요.</p></div></header>
+<main class="wrap">
+  <section class="stats">
+    <div class="stat"><span>저장한 단어</span><b id="totalStat">0</b></div>
+    <div class="stat"><span>오늘 학습한 단어</span><b id="todayStat">0</b></div>
+    <div class="stat"><span>누적 정답률</span><b id="accuracyStat">—</b></div>
+  </section>
+  <nav class="tabs">
+    <button class="tab active" data-tab="quiz">오늘의 퀴즈</button>
+    <button class="tab" data-tab="flash">단어 카드</button>
+    <button class="tab" data-tab="add">단어 추가</button>
+    <button class="tab" data-tab="words">내 단어장</button>
+  </nav>
+
+  <section id="quiz" class="view">
+    <div class="panel">
+      <h2>오늘의 단어 퀴즈</h2>
+      <p class="muted">한국어 뜻을 고르세요. 오답은 복습 목록에 표시됩니다.</p>
+      <div id="quizArea"></div>
+    </div>
+  </section>
+
+  <section id="flash" class="view hidden">
+    <div class="panel"><h2>단어 카드</h2><p class="muted">뜻을 먼저 생각한 뒤 정답을 확인하세요.</p><div id="flashArea"></div></div>
+  </section>
+
+  <section id="add" class="view hidden">
+    <div class="panel">
+      <h2>새 단어 추가</h2>
+      <form id="wordForm">
+        <div class="formgrid">
+          <div><label for="indo">인도네시아어 단어 *</label><input id="indo" required placeholder="예: berkeliling"></div>
+          <div><label for="korean">한국어 뜻 *</label><input id="korean" required placeholder="예: 여기저기 돌아다니다"></div>
+        </div>
+        <label for="example">인도네시아어 예문 (선택)</label><input id="example" placeholder="예: Kami berkeliling kota.">
+        <label for="translation">예문 해석 (선택)</label><input id="translation" placeholder="예: 우리는 도시를 돌아다녀요.">
+        <div class="actions"><button class="primary" type="submit">단어 저장</button><button class="ghost" type="reset">입력 지우기</button></div>
+      </form>
+      <p class="muted">저장한 단어는 이 브라우저에 보관됩니다. 다른 기기와 자동 동기화되지는 않습니다.</p>
+    </div>
+  </section>
+
+  <section id="words" class="view hidden">
+    <div class="panel">
+      <h2>내 단어장</h2>
+      <input id="searchWords" placeholder="단어 또는 뜻 검색…">
+      <div class="actions">
+        <button class="secondary" id="exportBtn">단어장 백업(JSON)</button>
+        <button class="ghost" id="importBtn">백업 불러오기</button>
+        <input id="importFile" class="hidden" type="file" accept=".json,application/json">
+      </div>
+      <div id="wordList" class="list" style="margin-top:14px"></div>
+    </div>
+  </section>
+</main>
+<footer>개인용 첫 버전 · 데이터는 현재 브라우저에 저장됩니다.</footer>
+<script type="module">
+const KEY='indo-korean-vocab-v1';
+const initial=[
+ {id:uid(),indo:'berkeliling',korean:'여기저기 돌아다니다',example:'Kami berkeliling kota.',translation:'우리는 도시를 돌아다녀요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'mengantarkan',korean:'데려다주다, 가져다주다',example:'Ayah mengantarkan saya ke kantor.',translation:'아버지가 저를 회사에 데려다주세요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'surat kabar',korean:'신문',example:'Saya membaca surat kabar.',translation:'저는 신문을 읽어요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'iklan',korean:'광고',example:'Dia memasang iklan di surat kabar.',translation:'그는 신문에 광고를 실어요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'satu pun',korean:'단 하나도 (주로 부정문)',example:'Tidak ada satu pun orang yang datang.',translation:'단 한 명도 오지 않았어요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'khawatir',korean:'걱정하다, 걱정되는',example:'Jangan khawatir.',translation:'걱정하지 마세요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'pendapat',korean:'의견, 견해',example:'Apa pendapat Anda?',translation:'당신의 의견은 무엇인가요?',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'lumayan',korean:'그럭저럭, 꽤, 제법',example:'Makanannya lumayan enak.',translation:'음식이 꽤 맛있어요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'terlalu',korean:'너무, 지나치게',example:'Kopi ini terlalu panas.',translation:'이 커피는 너무 뜨거워요.',wrong:0,seen:0,correct:0},
+ {id:uid(),indo:'sepertinya',korean:'~인 것 같다, ~처럼 보이다',example:'Sepertinya bagus.',translation:'좋은 것 같아요.',wrong:0,seen:0,correct:0}
+];
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+
+ async function load(){
+  // try {
+
+  //   const x = JSON.parse(localStorage.getItem(KEY));
+  //   return Array.isArray(x) && x.length > 0 ? x : initial;
+  // } catch(e) {
+  //   return initial;
+  // }
+    try {
+    const response = await fetch('./data.json');
+
+    if (!response.ok) {
+      throw new Error('JSON 파일을 불러오지 못했습니다.');
+    }
+
+    const x = await response.json();
+
+    return Array.isArray(x) && x.length > 0
+      ? x
+      : initial;
+  } catch (e) {
+    console.error(e);
+    return initial;
+  }
+}
+
+let words = load(), quizDeck = [], qIndex = 0, flashDeck = [], fIndex = 0, revealed = false, attempts = 0, hits = 0, todayDone = new Set(JSON.parse(localStorage.getItem(KEY+'-today')||'[]'));
+
+function save(){
+  localStorage.setItem(KEY, JSON.stringify(words));
+  localStorage.setItem(KEY+'-today', JSON.stringify([...todayDone]));
+  // renderStats();
+}
+
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function renderStats(){
+  document.getElementById('totalStat').textContent=words.length;
+  document.getElementById('todayStat').textContent=todayDone.size;
+  let s=words.reduce((a,w)=>a+(w.seen||0),0),c=words.reduce((a,w)=>a+(w.correct||0),0);
+  document.getElementById('accuracyStat').textContent=s?Math.round(c/s*100)+'%':'—';
+}
+function setTab(name){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==name));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));if(name==='quiz')startQuiz();if(name==='flash')startFlash();if(name==='words')renderWords()}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+
+function startQuiz(){quizDeck=shuffle(words).slice(0,Math.min(10,words.length));qIndex=0;renderQuestion()}
+function renderQuestion(){
+ const area=document.getElementById('quizArea');
+ if(!quizDeck.length){area.innerHTML='<div class="empty">단어가 없습니다. 먼저 단어를 추가하세요.</div>';return}
+ if(qIndex>=quizDeck.length){area.innerHTML=`<div class="word-card"><h2>오늘 퀴즈 완료!</h2><p>총 ${quizDeck.length}개 단어를 확인했어요.</p><p class="muted">틀린 단어는 단어장에 표시되며 다음 퀴즈에도 다시 나올 수 있습니다.</p><button class="primary" onclick="startQuiz()">다시 풀기</button></div>`;return}
+ const w=quizDeck[qIndex],opts=shuffle([w,...shuffle(words.filter(x=>x.id!==w.id)).slice(0,Math.min(3,words.length-1))]);
+ area.innerHTML=`<div class="muted">문제 ${qIndex+1} / ${quizDeck.length}</div><div class="word-card"><div class="word">${esc(w.indo)}</div><p class="muted">이 단어의 뜻은 무엇인가요?</p><div class="answer-options" id="options">${opts.map(o=>`<button data-id="${esc(o.id)}">${esc(o.korean)}</button>`).join('')}</div><div id="feedback" class="feedback"></div><div class="actions"><button class="primary" id="nextBtn" disabled>다음 문제</button></div></div>`;
+ document.querySelectorAll('#options button').forEach(b=>b.onclick=()=>answer(w,b));
+ document.getElementById('nextBtn').onclick=()=>{qIndex++;renderQuestion()};
+}
+
+function answer(w,b){if(b.dataset.answered)return;document.querySelectorAll('#options button').forEach(x=>x.dataset.answered='1');w.seen=(w.seen||0)+1;attempts++;let ok=b.dataset.id===w.id;let fb=document.getElementById('feedback');if(ok){w.correct=(w.correct||0)+1;hits++;b.classList.add('correct');fb.style.color='var(--good)';fb.textContent='정답입니다!'}else{w.wrong=(w.wrong||0)+1;b.classList.add('wrong');document.querySelector(`#options button[data-id="${CSS.escape(w.id)}"]`)?.classList.add('correct');fb.style.color='var(--bad)';fb.textContent='정답: '+w.korean}todayDone.add(w.id);save();document.getElementById('nextBtn').disabled=false}
+
+function startFlash(){flashDeck=shuffle(words);fIndex=0;revealed=false;renderFlash()}
+function renderFlash(){let area=document.getElementById('flashArea');if(!flashDeck.length){area.innerHTML='<div class="empty">저장된 단어가 없습니다.</div>';return}if(fIndex>=flashDeck.length)fIndex=0;let w=flashDeck[fIndex];area.innerHTML=`<div class="word-card"><div class="muted">카드 ${fIndex+1} / ${flashDeck.length}</div><div class="word">${esc(w.indo)}</div>${revealed?`<div class="meaning">${esc(w.korean)}</div><p class="example">${esc(w.example)}</p><p class="example">${esc(w.translation)}</p>`:'<p class="muted">뜻을 먼저 떠올려 보세요.</p>'}<div class="actions"><button class="secondary" id="revealBtn">${revealed?'뜻 숨기기':'뜻 확인'}</button><button class="ghost" id="prevBtn">이전</button><button class="primary" id="nextFlashBtn">다음</button></div></div>`;document.getElementById('revealBtn').onclick=()=>{revealed=!revealed;renderFlash()};document.getElementById('prevBtn').onclick=()=>{fIndex=(fIndex-1+flashDeck.length)%flashDeck.length;revealed=false;renderFlash()};document.getElementById('nextFlashBtn').onclick=()=>{fIndex=(fIndex+1)%flashDeck.length;revealed=false;renderFlash()}}
+
+document.getElementById('wordForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  let indo=document.getElementById('indo').value.trim(),korean=document.getElementById('korean').value.trim();
+  if(!indo||!korean)return;
+  let existing=words.find(w=>w.indo.toLowerCase()===indo.toLowerCase());
+  if(existing){
+    existing.korean=korean;
+    existing.example=document.getElementById('example').value.trim();
+    existing.translation=document.getElementById('translation').value.trim();
+    alert('같은 단어가 있어 뜻과 예문을 업데이트했습니다.');
+  } else {
+    words.unshift({id:uid(),indo,korean,example:document.getElementById('example').value.trim(),translation:document.getElementById('translation').value.trim(),wrong:0,seen:0,correct:0});
+  }
+  save();
+  e.target.reset();
+  alert('단어를 저장했습니다.');
+  setTab('words');
+});
+
+function renderWords(){
+  let q=(document.getElementById('searchWords').value||'').toLowerCase();
+  let list=words.filter(w=>(w.indo+' '+w.korean+' '+w.example).toLowerCase().includes(q));
+  document.getElementById('wordList').innerHTML=list.length?list.map(w=>`<div class="item"><div><strong>${esc(w.indo)}</strong><div>${esc(w.korean)}</div><div class="detail">${esc(w.example)}${w.translation?' · '+esc(w.translation):''}</div><div class="detail">오답 ${w.wrong||0}회 · 학습 ${w.seen||0}회</div></div><div><button class="ghost" onclick="editWord('${w.id}')">수정</button> <button class="danger" onclick="deleteWord('${w.id}')">삭제</button></div></div>`).join(''):'<div class="empty">검색 결과가 없어요.</div>';
+}
+
+document.getElementById('searchWords').addEventListener('input',renderWords);
+window.deleteWord=id=>{if(confirm('이 단어를 삭제할까요?')){words=words.filter(w=>w.id!==id);todayDone.delete(id);save();renderWords()}};
+window.editWord=id=>{let w=words.find(x=>x.id===id);if(!w)return;let korean=prompt('한국어 뜻',w.korean);if(korean===null)return;let example=prompt('인도네시아어 예문',w.example||'');if(example===null)return;let translation=prompt('예문 해석',w.translation||'');if(translation===null)return;w.korean=korean.trim();w.example=example.trim();w.translation=translation.trim();save();renderWords()};
+
+// 백업 내보내기 버튼
+document.getElementById('exportBtn').onclick=()=>{
+  let blob=new Blob([JSON.stringify(words,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='indonesian-vocabulary-backup.json';a.click();URL.revokeObjectURL(url);
+};
+
+// 백업 불러오기 버튼 -> 숨겨진 파일 선택창 연동
+document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+
+// 새로운 JSON 파일이 선택되었을 때 기존 단어장에 병합하고 저장하는 로직
+document.getElementById('importFile').onchange=async e=>{
+  let f = e.target.files[0];
+  if(!f)return;
+  try{
+    let data=JSON.parse(await f.text());
+    if(!Array.isArray(data)||!data.every(w=>w.indo&&w.korean))throw Error();
+    
+    // 기존 단어들과 중복 처리 (인도네시아어 단어가 같으면 업데이트, 없으면 추가)
+    let map=new Map(words.map(w=>[w.indo.toLowerCase(),w]));
+    data.forEach(w=>{
+      let old=map.get(w.indo.toLowerCase());
+      if(old){
+        console.log("<tool_call>음",w.indo);
+        Object.assign(old, w, {id: old.id}); // 기존 id 유지하면서 내용 덮어쓰기
+      } else {
+        words.push({...w, id: w.id || uid()});
+                console.log("<tool_call>음",w.indo);
+
+      }
+    })}
+    catch{
+
+    }};
+
+      save(); // 브라우저 localStorage에 저장!
+    renderWords();
+    renderStats();
+    // 초기 실행
+renderStats();
+startQuiz();
+
+</script>
+</body>
+</html>
