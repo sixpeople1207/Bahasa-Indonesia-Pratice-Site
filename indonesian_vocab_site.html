@@ -91,8 +91,7 @@ const initial=[
 ];
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
-
- async function load(){
+async function load(){
   // try {
 
   //   const x = JSON.parse(localStorage.getItem(KEY));
@@ -101,29 +100,44 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
   //   return initial;
   // }
     try {
-    const response = await fetch('https://github.com/sixpeople1207/Bahasa-Indonesia-Pratice-Site/blob/main/data.json');
-
+    let URL = 'https://raw.githubusercontent.com/sixpeople1207/Bahasa-Indonesia-Pratice-Site/refs/heads/main/data.json';
+    const response = await  fetch(URL);
+    // const jsonText = await response.text();
     if (!response.ok) {
       throw new Error('JSON 파일을 불러오지 못했습니다.');
     }
-
-    const x = await response.json();
-
+    else {
+      const x =  await response.json();
+      console.log('전체 데이터:', x);
+      console.log('데이터 개수:', x.length);
+      console.log('JSON 파일을 성공적으로 불러왔습니다.',x);
+    }
     return Array.isArray(x) && x.length > 0
       ? x
       : initial;
+
   } catch (e) {
-    console.error(e);
+    console.debug(e);
     return initial;
   }
 }
 
-let words = load(), quizDeck = [], qIndex = 0, flashDeck = [], fIndex = 0, revealed = false, attempts = 0, hits = 0, todayDone = new Set(JSON.parse(localStorage.getItem(KEY+'-today')||'[]'));
+let words = await load(), 
+quizDeck = [], 
+qIndex = 0, 
+flashDeck = [], 
+fIndex = 0,
+ revealed = false,
+  attempts = 0,
+   hits = 0,
+    todayDone = new Set(
+      JSON.parse(localStorage.getItem(KEY+'-today')||'[]')
+    );
 
 function save(){
   localStorage.setItem(KEY, JSON.stringify(words));
   localStorage.setItem(KEY+'-today', JSON.stringify([...todayDone]));
-  // renderStats();
+   renderStats();
 }
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -167,7 +181,7 @@ document.getElementById('wordForm').addEventListener('submit',e=>{
   } else {
     words.unshift({id:uid(),indo,korean,example:document.getElementById('example').value.trim(),translation:document.getElementById('translation').value.trim(),wrong:0,seen:0,correct:0});
   }
-  save();
+  // save();
   e.target.reset();
   alert('단어를 저장했습니다.');
   setTab('words');
